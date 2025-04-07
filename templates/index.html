@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan Video Effekt</title>
+  <style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #e74c3c;
+}
+
+input[type="file"] {
+    margin: 10px 0;
+}
+
+button {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: #c0392b;
+}
+  
+  </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Titan Video Effekt ⚡</h1>
+        <p>Video yuklang va Titan effektini qo'llang!</p>
+        
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="videoInput" accept="video/*" required>
+            <button type="submit">Yuborish</button>
+        </form>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('videoInput');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files.length) {
+                resultDiv.innerHTML = "<p style='color: red'>Video tanlang!</p>";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('video', fileInput.files[0]);
+
+            resultDiv.innerHTML = "<p>⏳ Video qayta ishlanmoqda...</p>";
+
+            try {
+                const response = await fetch('/process_video', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    resultDiv.innerHTML = `
+                        <p>✅ Tayyor!</p>
+                        <a href="${url}" download="titan_video.mp4">Yuklab olish</a>
+                        <video controls src="${url}" style="max-width: 100%"></video>
+                    `;
+                } else {
+                    const error = await response.json();
+                    resultDiv.innerHTML = `<p style='color: red'>❌ Xato: ${error.error}</p>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p style='color: red'>❌ Xato: ${err.message}</p>`;
+            }
+        });
+    </script>
+  
+</body>
+</html>
